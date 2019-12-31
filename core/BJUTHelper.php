@@ -134,7 +134,7 @@ class BJUTHelper
      */
     function get_final_result(string $current_year, string $current_term){
         $this->ensure_score_view_state();
-        if( is_null( $this->view_state) ) { return NULL; }
+        if(!$this->view_state) { return NULL; }
         $grade_total = $this->get_all_course();
         $grade_term = $this->get_specified_course($current_year, $current_term);
         //计算总的加权分数和总的GPA
@@ -290,7 +290,7 @@ class BJUTHelper
      */
     function get_specified_schedule(string $current_year="", string $current_term=""){
         $this->ensure_schedule_view_state();
-        if( is_null( $this->view_state) ) { return NULL; }
+        if(!$this->view_state) { return NULL; }
         $context = send_schedule_request(
             $this->http,
             $this->stu_id,
