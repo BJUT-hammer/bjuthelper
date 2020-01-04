@@ -30,7 +30,12 @@ include_once("core/BJUTHelper.php");
         exit();
     }
 
-    $result = $student->get_final_result($current_year, $current_term);
+    if(isset($_GET['term_only']) || isset($_POST['term_only'])) {
+	    $result = $student->get_final_result($current_year, $current_term, false);
+	} else {
+	    $result = $student->get_final_result($current_year, $current_term);
+	}
+
 
 ?>
 
