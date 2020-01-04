@@ -52,6 +52,7 @@ include_once("core/BJUTHelper.php");
         <div class="weui_accordion_title">
             <?php printf("本学期已出分课程数: %.2d ",$result["term_lesson_count"]); ?>
         </div>
+	    <?php if(isset($result["grade_total"]) && $result["grade_total"] && $result['sid'] == $result['total_sid']){ ?>
         <div class="weui_accordion_content">
             <p>
                 <?php printf("大学总已出分课程数: %.2d ",$result["total_lesson_count"]); ?>
@@ -60,8 +61,10 @@ include_once("core/BJUTHelper.php");
                 <?php printf("大学总未通过课程数: %.2d ",$result["all_number_of_lesson_unpassed"]); ?>
             </p>
         </div>
+	    <?php } ?>
     </div>
 </div>
+<?php if(isset($result["grade_total"]) && $result["grade_total"] && $result['sid'] == $result['total_sid']){ ?>
 <div class="weui_cells_title">总平均分</div>
 <div class="container">
     <div class="weui_accordion_box">
@@ -93,6 +96,27 @@ include_once("core/BJUTHelper.php");
         </div>
     </div>
 </div>
+	<div class="container">
+		<div class="weui_accordion_box">
+			<div class="weui_accordion_title">所有课程</div>
+			<div class="weui_accordion_content">
+				<div class="weui_cells">
+					<?php
+					//输出课程明细,主修课程
+					foreach($result["grade_total"] as $course){
+						echo '<div class="weui_cell">';
+						echo '<div class="weui_cell_bd weui_cell_primary">';
+						echo $course->name. " ($course->credit)";
+						echo '</div><div class="weui_cell_ft">';
+						echo $course->score;
+						echo '</div></div>';
+					}
+					?>
+				</div>
+			</div>
+		</div>
+	</div>
+<?php } ?>
 <div class="weui_cells_title">学期平均分</div>
 <div class="weui_cells">
     <div class="weui_cell">
@@ -147,19 +171,19 @@ if ($result["total_value_minor"] > 0) {
 <script src="js/accordion.js" async></script>
 <script src="js/require_score.js" async></script>
 
-<div class="weui_cells_title">课程明细</div>
+<div class="weui_cells_title">本学期课程明细</div>
 <div class="weui_cells">
 
 <?php
 //输出课程明细,主修课程
 foreach($result["grade_term"] as $course){
     if ($course->minor_maker == 0){
-        echo '<div class="weui_cell">';
-        echo '<div class="weui_cell_bd weui_cell_primary" data-course-id="'.$course->id.'" '
-                .'data-course-belong="'.$course->belong.'" data-course-type="'.$course->type.'">';
-        echo $course->name."  分数: ".$course->score."   课程学分: ".$course->credit;
-        echo '</div>';
-        echo '</div>';
+	    echo '<div class="weui_cell">';
+	    echo '<div class="weui_cell_bd weui_cell_primary">';
+	    echo $course->name. " ($course->credit)";
+	    echo '</div><div class="weui_cell_ft">';
+	    echo $course->score;
+	    echo '</div></div>';
     }
 }
 ?>
@@ -174,20 +198,21 @@ if ($result["total_value_minor"] > 0) {
         <?php
     foreach ($result["grade_term"] as $course){
         if ($course->minor_maker == 2){
-            echo '<div class="weui_cell">';
-            echo '<div class="weui_cell_bd weui_cell_primary" data-course-id="'.$course->id.'" '
-                .'data-course-belong="'.$course->belong.'" data-course-type="'.$course->type.'">';
-            echo $course->name."  分数: ".$course->score."   课程学分: ".$course->credit;
-            echo '</div>';
-            echo '</div>';
+	        echo '<div class="weui_cell">';
+	        echo '<div class="weui_cell_bd weui_cell_primary">';
+	        echo $course->name. " ($course->credit)";
+	        echo '</div><div class="weui_cell_ft">';
+	        echo $course->score;
+	        echo '</div></div>';
         }
         //辅修信息
         if ($course->minor_maker == 1){
             echo '<div class="weui_cell">';
             echo '<div class="weui_cell_bd weui_cell_primary">';
-            echo $course->name."  分数: ".$course->score."   课程学分: ".$course->credit;
-            echo '</div>';
-            echo '</div>';
+            echo $course->name. " ($course->credit)";
+            echo '</div><div class="weui_cell_ft">';
+            echo $course->score;
+            echo '</div></div>';
         }
     }
     ?>
@@ -196,7 +221,7 @@ if ($result["total_value_minor"] > 0) {
 }
 ?>
 
-<a class="weui_btn weui_btn_default" href="./">返回</a>
+	<a class="weui_btn weui_btn_default" href="./">返回</a>
 </div><!-- .container -->
 </body>
 </html>
