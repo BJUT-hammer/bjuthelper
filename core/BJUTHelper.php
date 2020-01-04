@@ -13,8 +13,6 @@ class BJUTHelper
 {
     //学生信息
     private $stu_id = '';
-    private $total_stu_id = '';
-    private $total_stu_name = '';
     private $password = '';
     private $view_state = '';
     private $view_state_type = '';
@@ -124,26 +122,25 @@ class BJUTHelper
             $this->http,
             $this->stu_id,
             $this->view_state);
-	    // 因为这里查询到的学生成绩可能是其他人的。如果是其他人，则不显示成绩。
-	    $this->total_stu_id = strstr(substr(strstr($context, '<span id="Label3">'), 27), '</span>', true);
-	    $this->total_stu_name = strstr(substr(strstr($context, '<span id="Label5">'), 27), '</span>', true);
-	    if($this->total_stu_id != $this->stu_id) {
-	    	//return NULL;
-	    }
 	    $courses = all_grade_parser($context);
         $this->info = personal_score_info_parser($context);
         return $courses;
     }
-    /**
-     * 返回计算后结果
-     * @param string $current_year
-     * @param string $current_term
-     * @return array
-     */
-    function get_final_result(string $current_year, string $current_term){
+
+	/**
+	 * 返回计算后结果
+	 * @param string $current_year
+	 * @param string $current_term
+	 * @param bool $all 是否获取在校期间全部 GPA
+	 * @return array
+	 */
+    function get_final_result(string $current_year, string $current_term, bool $all = true){
         $this->ensure_score_view_state();
         if(!$this->view_state) { return NULL; }
-        $grade_total = $this->get_all_course();
+	    $grade_total = array();
+        if($all) {
+	        $grade_total = $this->get_all_course();
+        }
         $grade_term = $this->get_specified_course($current_year, $current_term);
         //计算总的加权分数和总的GPA
         $all_score = 0; //总的加权*分数
@@ -250,9 +247,7 @@ class BJUTHelper
         $all_number_of_lesson_unpassed = $all_number_of_lesson_include_unpassed - $all_number_of_lesson_passed;
         $result = array(
             "sid"=> $this->info["sid"],
-            "total_sid"=> $this->total_stu_id,
             "name"=> $this->info["name"],
-	        "total_name"=> $this->total_stu_name,
             "institute"=> $this->info["institute"],
             "major"=> $this->info["major"],
             "direction"=> $this->info["direction"],

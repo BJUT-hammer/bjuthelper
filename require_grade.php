@@ -52,7 +52,7 @@ include_once("core/BJUTHelper.php");
         <div class="weui_accordion_title">
             <?php printf("本学期已出分课程数: %.2d ",$result["term_lesson_count"]); ?>
         </div>
-	    <?php if(isset($result["grade_total"]) && $result["grade_total"] && $result['sid'] == $result['total_sid']){ ?>
+	    <?php if(isset($result["grade_total"]) && $result["grade_total"]){ ?>
         <div class="weui_accordion_content">
             <p>
                 <?php printf("大学总已出分课程数: %.2d ",$result["total_lesson_count"]); ?>
@@ -64,7 +64,7 @@ include_once("core/BJUTHelper.php");
 	    <?php } ?>
     </div>
 </div>
-<?php if(isset($result["grade_total"]) && $result["grade_total"] && $result['sid'] == $result['total_sid']){ ?>
+<?php if(isset($result["grade_total"]) && $result["grade_total"]){ ?>
 <div class="weui_cells_title">总平均分</div>
 <div class="container">
     <div class="weui_accordion_box">
