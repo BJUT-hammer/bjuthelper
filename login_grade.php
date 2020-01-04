@@ -81,6 +81,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                             }
                         }
                         ?>
+						<option value="">全部成绩</option>
                     </select>
                 </div>
             </div>
@@ -101,6 +102,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                             }
                         }
                         ?>
+						<option value="">全部成绩</option>
                     </select>
                 </div>
             </div>
