@@ -39,8 +39,8 @@ function send_login_request(HttpHolder $http_holder, string $stu_id, string $pwd
         'TextBox1'=>$stu_id,
         'TextBox2'=>$pwd,
         //'txtSecretCode'=>$code,
-        //'RadioButtonList1_2'=>'%D1%A7%C9%FA',  //“学生”的gbk编码
-        //'Button1'=>'',
+        'RadioButtonList1_2'=>'%D1%A7%C9%FA',  //“学生”的gbk编码
+        'Button1'=>'',
         //'lbLanguage'=>'',
         //'hidPdrs'=>'',
         //'hidsc'=>''
