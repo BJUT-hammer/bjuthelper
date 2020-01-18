@@ -81,6 +81,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                             }
                         }
                         ?>
+						<option value="">全部成绩</option>
                     </select>
                 </div>
             </div>
@@ -101,6 +102,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                             }
                         }
                         ?>
+						<option value="">全部成绩</option>
                     </select>
                 </div>
             </div>
@@ -170,10 +172,12 @@ GPA 根据 <a href="http://undergrad.bjut.edu.cn/WebInfo.aspx?Id=752">北工大�
 <br>
 适用北京工业大学, by <a href="https://github.com/BJUT-hammer">西大望路东锤子研究所</a><br>
 <i class="weui_icon_warn"></i>&nbsp;本项目是已结题星火重点项目，已报备相关单位<br>
-<a href="http://www.miit.gov.cn/">京ICP备16062922号-1</a>
+	<?php if(!file_exists(ABSPATH . 'config.php')){ ?>
+		<a href="http://www.miit.gov.cn/">京ICP备16062922号-1</a>
+		<div style="display:none"><script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_1259582707'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s11.cnzz.com/stat.php%3Fid%3D1259582707' type='text/javascript'%3E%3C/script%3E"));</script></div>
+	<?php } ?>
 </section>
 </article>
-<div style="display:none"><script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_1259582707'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s11.cnzz.com/stat.php%3Fid%3D1259582707' type='text/javascript'%3E%3C/script%3E"));</script></div>
 </div><!-- .container -->
 </body>
 </html>

@@ -30,18 +30,32 @@ class BJUTHelper
         $this->password = $password;
         $this->http = new HttpHolder();
     }
+
     /**
      * 登录并检查密码。一切操作前都需要执行该方法
      * 成功返回真，失败（账号密码有误等等）返回假
      * @return bool
      */
     function login(){
-        $login_context = send_login_request($this->http, $this->stu_id, $this->password);
+	    if (function_exists('apcu_fetch')) {
+		    $existing_cookie = apcu_fetch('cookie_'.$this->stu_id);
+		    if($existing_cookie){
+			    $this->http->set_cookie($existing_cookie);
+			    return true;
+		    }
+	    }
+
+	    $login_context = send_login_request($this->http, $this->stu_id, $this->password);
         if(!check_login_success_parser($login_context)){
             $this->is_login = false;
             return false;
         }
-        $this->is_login = true;
+
+	    if (function_exists('apcu_fetch')) {
+		    apcu_store('cookie_'.$this->stu_id, $this->http->get_cookie(), 300);
+	    }
+
+	    $this->is_login = true;
         return true;
     }
     /**
@@ -108,19 +122,25 @@ class BJUTHelper
             $this->http,
             $this->stu_id,
             $this->view_state);
-        $courses = all_grade_parser($context);
+	    $courses = all_grade_parser($context);
         $this->info = personal_score_info_parser($context);
         return $courses;
     }
-    /**
-     * 返回计算后结果
-     * @param string $current_year
-     * @param string $current_term
-     * @return array
-     */
-    function get_final_result(string $current_year, string $current_term){
+
+	/**
+	 * 返回计算后结果
+	 * @param string $current_year
+	 * @param string $current_term
+	 * @param bool $all 是否获取在校期间全部 GPA
+	 * @return array
+	 */
+    function get_final_result(string $current_year, string $current_term, bool $all = true){
         $this->ensure_score_view_state();
-        $grade_total = $this->get_all_course();
+        if(!$this->view_state) { return NULL; }
+	    $grade_total = array();
+        if($all) {
+	        $grade_total = $this->get_all_course();
+        }
         $grade_term = $this->get_specified_course($current_year, $current_term);
         //计算总的加权分数和总的GPA
         $all_score = 0; //总的加权*分数
@@ -275,6 +295,7 @@ class BJUTHelper
      */
     function get_specified_schedule(string $current_year="", string $current_term=""){
         $this->ensure_schedule_view_state();
+        if(!$this->view_state) { return NULL; }
         $context = send_schedule_request(
             $this->http,
             $this->stu_id,
@@ -288,6 +309,35 @@ class BJUTHelper
             "info" => $info
         );
     }
+
+	/**
+	 * 登录 VPN
+	 */
+	function login_vpn(){
+		if (function_exists('apcu_fetch')) {
+			$existing_cookie = apcu_fetch('vpn_cookie');
+			if($existing_cookie){
+				$this->http->set_cookie($existing_cookie);
+				return true;
+			}
+		}
+		global $proxyUserName, $proxyPassword;
+		$url="https://vpn.bjut.edu.cn/prx/000/http/localhost/login";  // VPN 网关地址
+
+		$post=array(
+			'uname'=>$proxyUserName,
+			'pwd'=>$proxyPassword,
+		);
+
+		$login_context =  $this->http->post($url, http_build_query($post), true, 0); //将数组连接成字符串, 登陆教务系统
+		if(strstr($login_context, "https://vpn.bjut.edu.cn/prx/000/http/localhost/welcome")){
+			if (function_exists('apcu_fetch')) {
+				apcu_store('vpn_cookie', $this->http->get_cookie(), 1800);
+			}
+			return true;
+		}
+		return false;
+	}
 
 }
 //$test = new BJUTHelper("16080211", "");

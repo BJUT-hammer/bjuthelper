@@ -19,6 +19,9 @@ include_once("core/BJUTHelper.php");
 
     $student = new BJUTHelper($xh, $pw);
 
+    if(isset($proxyUserName)){
+	    $student->login_vpn();
+	}
     $login_success = $student->login();
 
     //若登陆信息输入有误
@@ -27,7 +30,12 @@ include_once("core/BJUTHelper.php");
         exit();
     }
 
-    $result = $student->get_final_result($current_year, $current_term);
+    if(isset($_GET['term_only']) || isset($_POST['term_only']) || !$current_year || !$current_term) {
+	    $result = $student->get_final_result($current_year, $current_term, false);
+	} else {
+	    $result = $student->get_final_result($current_year, $current_term);
+	}
+
 
 ?>
 
@@ -49,6 +57,7 @@ include_once("core/BJUTHelper.php");
         <div class="weui_accordion_title">
             <?php printf("本学期已出分课程数: %.2d ",$result["term_lesson_count"]); ?>
         </div>
+	    <?php if(isset($result["grade_total"]) && $result["grade_total"]){ ?>
         <div class="weui_accordion_content">
             <p>
                 <?php printf("大学总已出分课程数: %.2d ",$result["total_lesson_count"]); ?>
@@ -57,8 +66,10 @@ include_once("core/BJUTHelper.php");
                 <?php printf("大学总未通过课程数: %.2d ",$result["all_number_of_lesson_unpassed"]); ?>
             </p>
         </div>
+	    <?php } ?>
     </div>
 </div>
+<?php if(isset($result["grade_total"]) && $result["grade_total"]){ ?>
 <div class="weui_cells_title">总平均分</div>
 <div class="container">
     <div class="weui_accordion_box">
@@ -82,7 +93,7 @@ include_once("core/BJUTHelper.php");
         </div>
         <div class="weui_accordion_content">
             <p>
-                <?php printf("含未通过课程绩点（未通过计0绩点）：%.2lf",  $result["average_GPA_include_unpassed"]); ?>
+                <?php printf("课程绩点（未通过计0绩点）：%.2lf",  $result["average_GPA_include_unpassed"]); ?>
             </p>
             <p>
                 <?php printf("未通过课程补考后绩点（计60分2绩点）：%.2lf", $result["average_GPA_include_unpassed_passed"]); ?>
@@ -90,19 +101,40 @@ include_once("core/BJUTHelper.php");
         </div>
     </div>
 </div>
-<div class="weui_cells_title">学期平均分</div>
+	<div class="container">
+		<div class="weui_accordion_box">
+			<div class="weui_accordion_title">所有课程</div>
+			<div class="weui_accordion_content">
+				<div class="weui_cells">
+					<?php
+					//输出课程明细,主修课程
+					foreach($result["grade_total"] as $course){
+						echo '<div class="weui_cell">';
+						echo '<div class="weui_cell_bd weui_cell_primary">';
+						echo $course->name. " ($course->credit)";
+						echo '</div><div class="weui_cell_ft">';
+						echo $course->score;
+						echo '</div></div>';
+					}
+					?>
+				</div>
+			</div>
+		</div>
+	</div>
+<?php } ?>
+<div class="weui_cells_title"><?php if(!$current_year || !$current_term) { ?>总平均分<?php } else { ?>学期平均分<?php } ?></div>
 <div class="weui_cells">
     <div class="weui_cell">
         <div class="weui_cell_bd weui_cell_primary" id="average_score">
             <p>
-                <?php printf("本学期加权平均分: %.2lf 分", $result["average_score_term"]); ?>
+                <?php printf("加权平均分: %.2lf 分", $result["average_score_term"]); ?>
             </p>
         </div>
     </div>
     <div class="weui_cell">
         <div class="weui_cell_bd weui_cell_primary" id="average_GPA">
             <p>
-                <?php printf("本学期平均学分绩点（GPA）: %.2lf",$result["average_GPA_term"]); ?>
+                <?php printf("学分绩点 (GPA): %.2lf",$result["average_GPA_term"]); ?>
             </p>
         </div>
     </div>
@@ -143,24 +175,49 @@ if ($result["total_value_minor"] > 0) {
 <script src="//cdn.bootcss.com/jquery/3.1.0/jquery.min.js"></script>
 <script src="js/accordion.js" async></script>
 <script src="js/require_score.js" async></script>
-
-<div class="weui_cells_title">课程明细</div>
-<div class="weui_cells">
-
-<?php
-//输出课程明细,主修课程
-foreach($result["grade_term"] as $course){
-    if ($course->minor_maker == 0){
-        echo '<div class="weui_cell">';
-        echo '<div class="weui_cell_bd weui_cell_primary" data-course-id="'.$course->id.'" '
-                .'data-course-belong="'.$course->belong.'" data-course-type="'.$course->type.'">';
-        echo $course->name."  分数: ".$course->score."   课程学分: ".$course->credit;
-        echo '</div>';
-        echo '</div>';
-    }
-}
-?>
-</div>
+<?php if(!$current_year || !$current_term) { ?>
+	<div class="weui_cells">
+		<?php
+		//输出课程明细,主修课程
+		$c_year = '';
+		$c_term = '';
+		foreach($result["grade_term"] as $course){
+			if($course->term != $c_term || $course->year != $c_year) {
+				echo '<div class="weui_cells_title">' . $course->year . ' 学年，第 '. $course->term .' 学期</div>';
+			}
+			if ($course->minor_maker == 0){
+				echo '<div class="weui_cell">';
+				echo '<div class="weui_cell_bd weui_cell_primary">';
+				echo $course->name. " ($course->credit)";
+				echo '</div><div class="weui_cell_ft">';
+				echo $course->score;
+				echo '</div></div>';
+			}
+			if($course->term != $c_term || $course->year != $c_year) {
+				$c_term = $course->term;
+				$c_year = $course->year;
+			}
+		}
+		?>
+	</div>
+<?php } else { ?>
+	<div class="weui_cells_title">本学期课程明细</div>
+	<div class="weui_cells">
+		<?php
+		//输出课程明细,主修课程
+		foreach($result["grade_term"] as $course){
+			if ($course->minor_maker == 0){
+				echo '<div class="weui_cell">';
+				echo '<div class="weui_cell_bd weui_cell_primary">';
+				echo $course->name. " ($course->credit)";
+				echo '</div><div class="weui_cell_ft">';
+				echo $course->score;
+				echo '</div></div>';
+			}
+		}
+		?>
+	</div>
+<?php } ?>
 <?php
 //输出辅修/二专业课程信息
 if ($result["total_value_minor"] > 0) {
@@ -171,20 +228,21 @@ if ($result["total_value_minor"] > 0) {
         <?php
     foreach ($result["grade_term"] as $course){
         if ($course->minor_maker == 2){
-            echo '<div class="weui_cell">';
-            echo '<div class="weui_cell_bd weui_cell_primary" data-course-id="'.$course->id.'" '
-                .'data-course-belong="'.$course->belong.'" data-course-type="'.$course->type.'">';
-            echo $course->name."  分数: ".$course->score."   课程学分: ".$course->credit;
-            echo '</div>';
-            echo '</div>';
+	        echo '<div class="weui_cell">';
+	        echo '<div class="weui_cell_bd weui_cell_primary">';
+	        echo $course->name. " ($course->credit)";
+	        echo '</div><div class="weui_cell_ft">';
+	        echo $course->score;
+	        echo '</div></div>';
         }
         //辅修信息
         if ($course->minor_maker == 1){
             echo '<div class="weui_cell">';
             echo '<div class="weui_cell_bd weui_cell_primary">';
-            echo $course->name."  分数: ".$course->score."   课程学分: ".$course->credit;
-            echo '</div>';
-            echo '</div>';
+            echo $course->name. " ($course->credit)";
+            echo '</div><div class="weui_cell_ft">';
+            echo $course->score;
+            echo '</div></div>';
         }
     }
     ?>
@@ -193,7 +251,7 @@ if ($result["total_value_minor"] > 0) {
 }
 ?>
 
-<a class="weui_btn weui_btn_default" href="./">返回</a>
+	<a class="weui_btn weui_btn_default" href="./">返回</a>
 </div><!-- .container -->
 </body>
 </html>
